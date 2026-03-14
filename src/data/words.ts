@@ -1,4 +1,5 @@
-import allWordsData from './all_words.json';
+import wordsPart1 from './words_part1.json';
+import wordsPart2 from './words_part2.json';
 
 export interface Word {
   id: string;
@@ -13,7 +14,7 @@ let cachedWords: Word[] | null = null;
 export const getWords = async (): Promise<Word[]> => {
   if (cachedWords) return cachedWords;
   try {
-    cachedWords = allWordsData as Word[];
+    cachedWords = [...(wordsPart1 as Word[]), ...(wordsPart2 as Word[])];
     return cachedWords;
   } catch (error) {
     console.error('Failed to load words:', error);
