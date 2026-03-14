@@ -1,0 +1,5 @@
+{
+  "name": "MeowVocab",
+  "description": "A cute English vocabulary learning app with spaced repetition, scratch-off reveals, and AI features.",
+  "requestFramePermissions": ["microphone"]
+}
