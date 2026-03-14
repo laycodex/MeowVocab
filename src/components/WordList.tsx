@@ -35,6 +35,7 @@ export const WordList: React.FC<WordListProps> = ({ category, order, handedness,
   const [words, setWords] = useState<Word[]>([]);
   const [revealedWords, setRevealedWords] = useState<Set<string>>(new Set());
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     setFavorites(new Set(getFavorites()));
@@ -46,6 +47,7 @@ export const WordList: React.FC<WordListProps> = ({ category, order, handedness,
         if (savedWords && savedWords.length > 0) {
           setWords(savedWords);
           setRevealedWords(new Set(savedRevealed));
+          setIsLoading(false);
           return;
         }
       } catch (e) {
@@ -65,15 +67,17 @@ export const WordList: React.FC<WordListProps> = ({ category, order, handedness,
     }
   }, [words, revealedWords, category, order, mode]);
 
-  const loadWords = (reset = false) => {
+  const loadWords = async (reset = false) => {
+    if (reset) setIsLoading(true);
     const currentIds = reset ? [] : words.map(w => w.id);
-    const due = getDueWords(category, 20, order, currentIds, mode);
+    const due = await getDueWords(category, 20, order, currentIds, mode);
     if (reset) {
       setWords(due);
       setRevealedWords(new Set());
     } else {
       setWords(prev => [...prev, ...due]);
     }
+    setIsLoading(false);
   };
 
   const playAudio = (word: string) => {
@@ -121,6 +125,15 @@ export const WordList: React.FC<WordListProps> = ({ category, order, handedness,
   const handleHideAll = () => {
     setRevealedWords(new Set());
   };
+
+  if (isLoading) {
+    return (
+      <div className="text-center py-20">
+        <div className="w-12 h-12 border-4 border-[#F4A261] border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
+        <h2 className="text-xl font-semibold text-[#5C4B41]">Loading words...</h2>
+      </div>
+    );
+  }
 
   if (words.length === 0) {
     return (

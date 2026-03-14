@@ -1,4 +1,4 @@
-import { Word, words } from '../data/words';
+import { Word, getWords } from '../data/words';
 
 export interface ReviewData {
   wordId: string;
@@ -89,9 +89,10 @@ export const reviewWord = (wordId: string, quality: number) => {
   incrementDailyCount();
 };
 
-export const getDueWords = (category: string, limit: number = 20, order: 'sequential' | 'random' = 'sequential', excludeIds: string[] = [], mode: 'new' | 'review' | 'all' = 'all'): Word[] => {
+export const getDueWords = async (category: string, limit: number = 20, order: 'sequential' | 'random' = 'sequential', excludeIds: string[] = [], mode: 'new' | 'review' | 'all' = 'all'): Promise<Word[]> => {
   const progress = getProgress();
   const now = Date.now();
+  const words = await getWords();
   
   const categoryWords = words.filter(w => w.category.includes(category));
   

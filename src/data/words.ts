@@ -1,5 +1,3 @@
-import allWords from './all_words.json';
-
 export interface Word {
   id: string;
   word: string;
@@ -8,7 +6,19 @@ export interface Word {
   category: string;
 }
 
-export const words: Word[] = allWords as Word[];
+let cachedWords: Word[] | null = null;
+
+export const getWords = async (): Promise<Word[]> => {
+  if (cachedWords) return cachedWords;
+  try {
+    const response = await fetch('./data/all_words.json');
+    cachedWords = await response.json();
+    return cachedWords || [];
+  } catch (error) {
+    console.error('Failed to load words:', error);
+    return [];
+  }
+};
 
 export const quotes = [
   "Believe you can and you're halfway there.",
