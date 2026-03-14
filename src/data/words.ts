@@ -11,12 +11,17 @@ let cachedWords: Word[] | null = null;
 export const getWords = async (): Promise<Word[]> => {
   if (cachedWords) return cachedWords;
   try {
-    const response = await fetch('./data/all_words.json');
+    const baseUrl = import.meta.env.BASE_URL || './';
+    const fetchUrl = baseUrl.endsWith('/') ? `${baseUrl}data/all_words.json` : `${baseUrl}/data/all_words.json`;
+    const response = await fetch(fetchUrl);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
     cachedWords = await response.json();
     return cachedWords || [];
   } catch (error) {
     console.error('Failed to load words:', error);
-    return [];
+    throw error;
   }
 };
 

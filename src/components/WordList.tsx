@@ -36,6 +36,7 @@ export const WordList: React.FC<WordListProps> = ({ category, order, handedness,
   const [revealedWords, setRevealedWords] = useState<Set<string>>(new Set());
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     setFavorites(new Set(getFavorites()));
@@ -69,15 +70,22 @@ export const WordList: React.FC<WordListProps> = ({ category, order, handedness,
 
   const loadWords = async (reset = false) => {
     if (reset) setIsLoading(true);
-    const currentIds = reset ? [] : words.map(w => w.id);
-    const due = await getDueWords(category, 20, order, currentIds, mode);
-    if (reset) {
-      setWords(due);
-      setRevealedWords(new Set());
-    } else {
-      setWords(prev => [...prev, ...due]);
+    setError(null);
+    try {
+      const currentIds = reset ? [] : words.map(w => w.id);
+      const due = await getDueWords(category, 20, order, currentIds, mode);
+      if (reset) {
+        setWords(due);
+        setRevealedWords(new Set());
+      } else {
+        setWords(prev => [...prev, ...due]);
+      }
+    } catch (err) {
+      console.error('Failed to load words:', err);
+      setError('Failed to load words. Please check your connection and try again.');
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   const playAudio = (word: string) => {
@@ -131,6 +139,25 @@ export const WordList: React.FC<WordListProps> = ({ category, order, handedness,
       <div className="text-center py-20">
         <div className="w-12 h-12 border-4 border-[#F4A261] border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
         <h2 className="text-xl font-semibold text-[#5C4B41]">Loading words...</h2>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-20">
+        <div className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+          <svg className="w-12 h-12 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <h2 className="text-xl font-semibold text-red-600 mb-4">{error}</h2>
+        <button 
+          onClick={() => loadWords(true)}
+          className="px-6 py-3 bg-[#F4A261] text-white rounded-full font-medium hover:bg-[#E79453] transition-colors"
+        >
+          Retry
+        </button>
       </div>
     );
   }
