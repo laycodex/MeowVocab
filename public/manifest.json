@@ -1,0 +1,21 @@
+{
+  "name": "MeowVocab",
+  "short_name": "MeowVocab",
+  "description": "Your personal vocabulary learning assistant",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#F4A261",
+  "icons": [
+    {
+      "src": "https://picsum.photos/seed/meowvocab192/192/192",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://picsum.photos/seed/meowvocab512/512/512",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
