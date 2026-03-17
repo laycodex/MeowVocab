@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { WordList } from './components/WordList';
 import { Reward } from './components/Reward';
+import { SponsorModal } from './components/SponsorModal';
 import { getDailyCount } from './utils/ebbinghaus';
-import { BookOpen, Bell, ArrowLeftRight, Shuffle } from 'lucide-react';
+import { BookOpen, Bell, ArrowLeftRight, Shuffle, Fish, ShoppingBag } from 'lucide-react';
 
 export default function App() {
   const [category, setCategory] = useState<'IELTS' | 'GRE' | 'TOEFL' | 'SAT'>('IELTS');
@@ -13,8 +14,16 @@ export default function App() {
   const [showReward, setShowReward] = useState(false);
   const [rewardShownToday, setRewardShownToday] = useState(false);
   const [reminderEnabled, setReminderEnabled] = useState(false);
+  const [showSponsor, setShowSponsor] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
 
   useEffect(() => {
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    
     const { count } = getDailyCount();
     setDailyCount(count);
     
@@ -29,7 +38,25 @@ export default function App() {
       setReminderEnabled(true);
       setupReminder();
     }
+
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
   }, []);
+
+  const handleInstallClick = () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then((choiceResult: any) => {
+        if (choiceResult.outcome === 'accepted') {
+          console.log('User accepted the install prompt');
+        } else {
+          console.log('User dismissed the install prompt');
+        }
+        setDeferredPrompt(null);
+      });
+    } else {
+      alert('请点击浏览器的“分享”或“菜单”按钮，选择“添加到主屏幕”');
+    }
+  };
 
   const handleDailyGoalUpdate = (increment: number) => {
     const newCount = dailyCount + increment;
@@ -106,6 +133,34 @@ export default function App() {
 
       {/* Main Content */}
       <main className="max-w-md mx-auto px-4 py-6">
+        {/* Action Buttons */}
+        <div className="flex gap-3 mb-6">
+          <button 
+            onClick={handleInstallClick}
+            className="flex-1 flex items-center justify-center gap-2 bg-white border border-[#E5E0D8] text-[#5C4B41] py-3 rounded-xl font-medium shadow-sm active:scale-95 transition-transform"
+          >
+            <Fish className="w-5 h-5 text-[#E9C46A] fill-[#FAF8F5]" />
+            添加到桌面
+          </button>
+          <button 
+            onClick={() => setShowSponsor(true)}
+            className="flex-1 flex items-center justify-center gap-2 bg-[#F4A261] text-white py-3 rounded-xl font-medium shadow-sm active:scale-95 transition-transform"
+          >
+            <div className="relative flex items-center justify-center">
+              <ShoppingBag className="w-5 h-5" />
+              <img 
+                src="/cat.jpg" 
+                alt="cat" 
+                className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full object-cover border border-[#F4A261]" 
+                onError={(e) => {
+                  e.currentTarget.src = 'https://picsum.photos/seed/cat/200/200';
+                }}
+              />
+            </div>
+            赞助猫粮
+          </button>
+        </div>
+
         <div className="flex bg-white p-1 rounded-xl border border-[#E5E0D8] mb-4 shadow-sm overflow-x-auto hide-scrollbar">
           {['IELTS', 'GRE', 'TOEFL', 'SAT'].map((cat) => (
             <button
@@ -189,6 +244,9 @@ export default function App() {
 
       {/* Reward Modal */}
       {showReward && <Reward onClose={() => setShowReward(false)} />}
+      
+      {/* Sponsor Modal */}
+      {showSponsor && <SponsorModal onClose={() => setShowSponsor(false)} />}
     </div>
   );
 }
