@@ -21,14 +21,10 @@ export const SponsorModal: React.FC<SponsorModalProps> = ({ onClose }) => {
         
         <div className="p-6 flex flex-col items-center text-center">
           <div className="w-48 h-48 bg-gray-100 rounded-xl mb-4 overflow-hidden border-2 border-[#E9C46A] p-2">
-            {/* 默认使用 public/qrcode.jpg，如果找不到则显示占位图 */}
             <img 
-              src="/qrcode.jpg" 
+              src="/qrcode.jpg?v=2" 
               alt="收款码" 
               className="w-full h-full object-contain"
-              onError={(e) => {
-                e.currentTarget.src = 'https://picsum.photos/seed/qrcode/200/200';
-              }}
             />
           </div>
           

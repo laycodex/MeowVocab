@@ -149,12 +149,9 @@ export default function App() {
             <div className="relative flex items-center justify-center">
               <ShoppingBag className="w-5 h-5" />
               <img 
-                src="/cat.jpg" 
+                src="/cat.jpg?v=2" 
                 alt="cat" 
                 className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full object-cover border border-[#F4A261]" 
-                onError={(e) => {
-                  e.currentTarget.src = 'https://picsum.photos/seed/cat/200/200';
-                }}
               />
             </div>
             赞助猫粮
