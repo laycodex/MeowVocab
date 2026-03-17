@@ -4,12 +4,13 @@ import { Reward } from './components/Reward';
 import { SponsorModal } from './components/SponsorModal';
 import { getDailyCount } from './utils/ebbinghaus';
 import { BookOpen, Bell, ArrowLeftRight, Shuffle, Fish, ShoppingBag } from 'lucide-react';
+import catImg from './assets/cat.jpg';
 
 export default function App() {
   const [category, setCategory] = useState<'IELTS' | 'GRE' | 'TOEFL' | 'SAT'>('IELTS');
   const [order, setOrder] = useState<'sequential' | 'random'>('sequential');
   const [handedness, setHandedness] = useState<'right' | 'left'>('right');
-  const [mode, setMode] = useState<'new' | 'review' | 'all'>('all');
+  const [mode, setMode] = useState<'new' | 'review' | 'all' | 'favorites'>('all');
   const [dailyCount, setDailyCount] = useState(0);
   const [showReward, setShowReward] = useState(false);
   const [rewardShownToday, setRewardShownToday] = useState(false);
@@ -149,7 +150,7 @@ export default function App() {
             <div className="relative flex items-center justify-center">
               <ShoppingBag className="w-5 h-5" />
               <img 
-                src="/cat.jpg?v=3" 
+                src={catImg} 
                 alt="cat" 
                 className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full object-cover border border-[#F4A261]" 
               />
@@ -172,10 +173,10 @@ export default function App() {
           ))}
         </div>
 
-        <div className="flex bg-white p-1 rounded-xl border border-[#E5E0D8] mb-4 shadow-sm">
+        <div className="flex bg-white p-1 rounded-xl border border-[#E5E0D8] mb-4 shadow-sm overflow-x-auto hide-scrollbar">
           <button
             onClick={() => setMode('all')}
-            className={`flex-1 py-2 rounded-lg font-medium text-sm transition-colors ${
+            className={`flex-1 min-w-[70px] py-2 rounded-lg font-medium text-sm transition-colors ${
               mode === 'all' ? 'bg-[#F4A261] text-white' : 'text-[#A89F91] hover:bg-[#FAF8F5]'
             }`}
           >
@@ -183,7 +184,7 @@ export default function App() {
           </button>
           <button
             onClick={() => setMode('new')}
-            className={`flex-1 py-2 rounded-lg font-medium text-sm transition-colors ${
+            className={`flex-1 min-w-[70px] py-2 rounded-lg font-medium text-sm transition-colors ${
               mode === 'new' ? 'bg-[#F4A261] text-white' : 'text-[#A89F91] hover:bg-[#FAF8F5]'
             }`}
           >
@@ -191,11 +192,19 @@ export default function App() {
           </button>
           <button
             onClick={() => setMode('review')}
-            className={`flex-1 py-2 rounded-lg font-medium text-sm transition-colors ${
+            className={`flex-1 min-w-[70px] py-2 rounded-lg font-medium text-sm transition-colors ${
               mode === 'review' ? 'bg-[#F4A261] text-white' : 'text-[#A89F91] hover:bg-[#FAF8F5]'
             }`}
           >
             复习 (Review)
+          </button>
+          <button
+            onClick={() => setMode('favorites')}
+            className={`flex-1 min-w-[70px] py-2 rounded-lg font-medium text-sm transition-colors ${
+              mode === 'favorites' ? 'bg-[#F4A261] text-white' : 'text-[#A89F91] hover:bg-[#FAF8F5]'
+            }`}
+          >
+            收藏 (Fav)
           </button>
         </div>
 

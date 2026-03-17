@@ -8,7 +8,7 @@ interface WordListProps {
   category: string;
   order: 'sequential' | 'random';
   handedness: 'right' | 'left';
-  mode: 'new' | 'review' | 'all';
+  mode: 'new' | 'review' | 'all' | 'favorites';
   onDailyGoalUpdate: (count: number) => void;
 }
 
@@ -37,49 +37,21 @@ export const WordList: React.FC<WordListProps> = ({ category, order, handedness,
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentParams, setCurrentParams] = useState({ category, order, mode });
 
-  useEffect(() => {
-    setFavorites(new Set(getFavorites()));
-    
-    const savedState = localStorage.getItem(`vocab_state_${category}_${order}_${mode}`);
-    if (savedState) {
-      try {
-        const { savedWords, savedRevealed } = JSON.parse(savedState);
-        if (savedWords && savedWords.length > 0) {
-          setWords(savedWords);
-          setRevealedWords(new Set(savedRevealed));
-          setIsLoading(false);
-          return;
-        }
-      } catch (e) {
-        console.error('Failed to parse saved state', e);
-      }
-    }
-    
-    loadWords(true);
-  }, [category, order, mode]);
-
-  useEffect(() => {
-    if (words.length > 0) {
-      localStorage.setItem(`vocab_state_${category}_${order}_${mode}`, JSON.stringify({
-        savedWords: words,
-        savedRevealed: Array.from(revealedWords)
-      }));
-    }
-  }, [words, revealedWords, category, order, mode]);
-
-  const loadWords = async (reset = false) => {
+  const loadWords = async (reset = false, cat = category, ord = order, m = mode) => {
     if (reset) setIsLoading(true);
     setError(null);
     try {
       const currentIds = reset ? [] : words.map(w => w.id);
-      const due = await getDueWords(category, 20, order, currentIds, mode);
+      const due = await getDueWords(cat, 20, ord, currentIds, m);
       if (reset) {
         setWords(due);
         setRevealedWords(new Set());
       } else {
         setWords(prev => [...prev, ...due]);
       }
+      setCurrentParams({ category: cat, order: ord, mode: m });
     } catch (err) {
       console.error('Failed to load words:', err);
       setError('Failed to load words. Please check your connection and try again.');
@@ -87,6 +59,47 @@ export const WordList: React.FC<WordListProps> = ({ category, order, handedness,
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    setFavorites(new Set(getFavorites()));
+    
+    // Clear words immediately to prevent UI flicker of old words in new mode
+    setWords([]);
+    setIsLoading(true);
+
+    if (mode !== 'favorites') {
+      const savedState = localStorage.getItem(`vocab_state_${category}_${order}_${mode}`);
+      if (savedState) {
+        try {
+          const { savedWords, savedRevealed } = JSON.parse(savedState);
+          if (savedWords && savedWords.length > 0) {
+            setWords(savedWords);
+            setRevealedWords(new Set(savedRevealed));
+            setCurrentParams({ category, order, mode });
+            setIsLoading(false);
+            return;
+          }
+        } catch (e) {
+          console.error('Failed to parse saved state', e);
+        }
+      }
+    }
+    
+    loadWords(true, category, order, mode);
+  }, [category, order, mode]);
+
+  useEffect(() => {
+    if (words.length > 0 && 
+        currentParams.category === category && 
+        currentParams.order === order && 
+        currentParams.mode === mode &&
+        mode !== 'favorites') {
+      localStorage.setItem(`vocab_state_${category}_${order}_${mode}`, JSON.stringify({
+        savedWords: words,
+        savedRevealed: Array.from(revealedWords)
+      }));
+    }
+  }, [words, revealedWords, category, order, mode, currentParams]);
 
   const playAudio = (word: string) => {
     if ('speechSynthesis' in window) {
@@ -172,6 +185,8 @@ export const WordList: React.FC<WordListProps> = ({ category, order, handedness,
         <p className="text-[#A89F91]">
           {mode === 'review' 
             ? `You've reviewed all due ${category} words for now.` 
+            : mode === 'favorites'
+            ? `You haven't favorited any ${category} words yet.`
             : `No more ${category} words to show in this mode.`}
         </p>
         <button 

@@ -89,16 +89,21 @@ export const reviewWord = (wordId: string, quality: number) => {
   incrementDailyCount();
 };
 
-export const getDueWords = async (category: string, limit: number = 20, order: 'sequential' | 'random' = 'sequential', excludeIds: string[] = [], mode: 'new' | 'review' | 'all' = 'all'): Promise<Word[]> => {
+export const getDueWords = async (category: string, limit: number = 20, order: 'sequential' | 'random' = 'sequential', excludeIds: string[] = [], mode: 'new' | 'review' | 'all' | 'favorites' = 'all'): Promise<Word[]> => {
   const progress = getProgress();
   const now = Date.now();
   const words = await getWords();
+  const favorites = getFavorites();
   
   const categoryWords = words.filter(w => w.category.includes(category));
   
   // Filter words that are due or new, and not in excludeIds
   let dueWords = categoryWords.filter(w => {
     if (excludeIds.includes(w.id)) return false;
+    
+    if (mode === 'favorites') {
+      return favorites.includes(w.id);
+    }
     
     const hasProgress = !!progress[w.id];
     const due = progress[w.id]?.nextReview || 0;

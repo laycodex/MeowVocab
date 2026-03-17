@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { X, Copy, Check } from 'lucide-react';
+import wechatImg from '../assets/wechat.png';
+import alipayImg from '../assets/alipay.png';
 
 interface SponsorModalProps {
   onClose: () => void;
@@ -50,7 +52,7 @@ export const SponsorModal: React.FC<SponsorModalProps> = ({ onClose }) => {
 
           <div className="w-48 h-48 bg-gray-100 rounded-xl mb-3 overflow-hidden border-2 border-[#E9C46A] p-2 relative shrink-0">
             <img 
-              src={method === 'wechat' ? "/wechat.png?v=3" : "/alipay.png?v=3"} 
+              src={method === 'wechat' ? wechatImg : alipayImg} 
               alt={method === 'wechat' ? "微信收款码" : "支付宝收款码"} 
               className="w-full h-full object-contain select-auto"
               style={{ WebkitTouchCallout: 'default' }}
