@@ -149,7 +149,7 @@ export default function App() {
             <div className="relative flex items-center justify-center">
               <ShoppingBag className="w-5 h-5" />
               <img 
-                src="/cat.jpg?v=2" 
+                src="/cat.jpg?v=3" 
                 alt="cat" 
                 className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full object-cover border border-[#F4A261]" 
               />

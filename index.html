@@ -6,15 +6,6 @@
     <title>MeowVocab</title>
     <link rel="manifest" href="/manifest.json" />
     <script>
-      // Force clear old service workers that might have cached the broken white-screen version
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then(function(registrations) {
-          for(let registration of registrations) {
-            registration.unregister();
-          }
-        });
-      }
-      
       // Disable right-click
       document.addEventListener('contextmenu', event => event.preventDefault());
       

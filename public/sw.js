@@ -1,4 +1,4 @@
-const CACHE_NAME = 'meowvocab-cache-v3';
+const CACHE_NAME = 'meowvocab-cache-v5';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -6,6 +6,7 @@ const urlsToCache = [
 ];
 
 self.addEventListener('install', event => {
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
@@ -16,38 +17,31 @@ self.addEventListener('install', event => {
 });
 
 self.addEventListener('fetch', event => {
+  // Use Network First for all requests to ensure we always get the latest code in dev mode
   event.respondWith(
-    caches.match(event.request)
+    fetch(event.request)
       .then(response => {
-        // Cache hit - return response
-        if (response) {
+        // Check if we received a valid response
+        if (!response || response.status !== 200 || response.type !== 'basic') {
           return response;
         }
 
-        // Clone the request because it's a stream and can only be consumed once
-        const fetchRequest = event.request.clone();
+        // Clone the response because it's a stream
+        const responseToCache = response.clone();
 
-        return fetch(fetchRequest).then(
-          response => {
-            // Check if we received a valid response
-            if(!response || response.status !== 200 || response.type !== 'basic') {
-              return response;
+        caches.open(CACHE_NAME)
+          .then(cache => {
+            // Only cache requests from our origin to avoid caching external APIs
+            if (event.request.url.startsWith(self.location.origin)) {
+              cache.put(event.request, responseToCache);
             }
+          });
 
-            // Clone the response because it's a stream
-            const responseToCache = response.clone();
-
-            caches.open(CACHE_NAME)
-              .then(cache => {
-                // Only cache requests from our origin to avoid caching external APIs
-                if (event.request.url.startsWith(self.location.origin)) {
-                  cache.put(event.request, responseToCache);
-                }
-              });
-
-            return response;
-          }
-        );
+        return response;
+      })
+      .catch(() => {
+        // If network fails, try to serve from cache
+        return caches.match(event.request);
       })
   );
 });
@@ -63,6 +57,6 @@ self.addEventListener('activate', event => {
           }
         })
       );
-    })
+    }).then(() => self.clients.claim())
   );
 });

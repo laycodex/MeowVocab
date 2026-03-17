@@ -22,7 +22,7 @@ export const SponsorModal: React.FC<SponsorModalProps> = ({ onClose }) => {
         <div className="p-6 flex flex-col items-center text-center">
           <div className="w-48 h-48 bg-gray-100 rounded-xl mb-4 overflow-hidden border-2 border-[#E9C46A] p-2">
             <img 
-              src="/qrcode.jpg?v=2" 
+              src="/qrcode.jpg?v=3" 
               alt="收款码" 
               className="w-full h-full object-contain"
             />
