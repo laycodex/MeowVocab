@@ -6,8 +6,13 @@
     <title>MeowVocab</title>
     <link rel="manifest" href="/manifest.json" />
     <script>
-      // Disable right-click
-      document.addEventListener('contextmenu', event => event.preventDefault());
+      // Disable right-click except for images
+      document.addEventListener('contextmenu', event => {
+        if (event.target && event.target.tagName === 'IMG') {
+          return; // Allow context menu on images
+        }
+        event.preventDefault();
+      });
       
       // Disable common developer tools shortcuts
       document.onkeydown = function (e) {

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'meowvocab-cache-v5';
+const CACHE_NAME = 'meowvocab-cache-v6';
 const urlsToCache = [
   '/',
   '/index.html',
