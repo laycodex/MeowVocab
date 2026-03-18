@@ -105,7 +105,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAF8F5] text-[#5C4B41] font-sans pb-12">
+    <div className="min-h-[100dvh] bg-[#FAF8F5] text-[#5C4B41] font-sans pb-12">
       {/* Header */}
       <header className="bg-white border-b border-[#E5E0D8] sticky top-0 z-40 shadow-sm">
         <div className="max-w-md mx-auto px-6 py-4 flex justify-between items-center">
@@ -153,6 +153,7 @@ export default function App() {
                 src={catImg} 
                 alt="cat" 
                 className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full object-cover border border-[#F4A261]" 
+                referrerPolicy="no-referrer"
               />
             </div>
             赞助猫粮

@@ -1,5 +1,6 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
+import legacy from '@vitejs/plugin-legacy';
 import path from 'path';
 import {defineConfig, loadEnv} from 'vite';
 
@@ -7,9 +8,15 @@ export default defineConfig(({mode}) => {
   const env = loadEnv(mode, '.', '');
   return {
     base: './',
+    build: {
+      assetsInlineLimit: 0,
+    },
     plugins: [
       react(), 
-      tailwindcss()
+      tailwindcss(),
+      legacy({
+        targets: ['defaults', 'not IE 11', 'Android >= 5', 'iOS >= 9']
+      })
     ],
     define: {
       'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
