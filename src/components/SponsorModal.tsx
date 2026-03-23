@@ -56,7 +56,6 @@ export const SponsorModal: React.FC<SponsorModalProps> = ({ onClose }) => {
               alt={method === 'wechat' ? "微信收款码" : "支付宝收款码"} 
               className="w-full h-full object-contain select-auto pointer-events-auto"
               style={{ WebkitTouchCallout: 'default', WebkitUserSelect: 'auto', userSelect: 'auto' }}
-              referrerPolicy="no-referrer"
             />
           </div>
           

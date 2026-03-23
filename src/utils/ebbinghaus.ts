@@ -50,6 +50,7 @@ export const toggleFavorite = (wordId: string): boolean => {
     isFav = true;
   }
   localStorage.setItem('vocab_favorites', JSON.stringify(Array.from(favs)));
+  window.dispatchEvent(new Event('favorites_changed'));
   return isFav;
 };
 

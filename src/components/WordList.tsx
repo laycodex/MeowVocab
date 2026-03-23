@@ -63,6 +63,11 @@ export const WordList: React.FC<WordListProps> = ({ category, order, handedness,
   useEffect(() => {
     setFavorites(new Set(getFavorites()));
     
+    const handleFavoritesChanged = () => {
+      setFavorites(new Set(getFavorites()));
+    };
+    window.addEventListener('favorites_changed', handleFavoritesChanged);
+    
     // Clear words immediately to prevent UI flicker of old words in new mode
     setWords([]);
     setIsLoading(true);
@@ -86,6 +91,10 @@ export const WordList: React.FC<WordListProps> = ({ category, order, handedness,
     }
     
     loadWords(true, category, order, mode);
+    
+    return () => {
+      window.removeEventListener('favorites_changed', handleFavoritesChanged);
+    };
   }, [category, order, mode]);
 
   useEffect(() => {
@@ -103,8 +112,27 @@ export const WordList: React.FC<WordListProps> = ({ category, order, handedness,
 
   const playAudio = (word: string) => {
     if ('speechSynthesis' in window) {
-      const utterance = new SpeechSynthesisUtterance(word);
+      // Cancel any ongoing speech to prevent queuing issues on Android
+      window.speechSynthesis.cancel();
+      
+      // Clean up the word to prevent spelling out (e.g., removing special characters)
+      const cleanWord = word.replace(/[^a-zA-Z\s-]/g, '').trim();
+      
+      const utterance = new SpeechSynthesisUtterance(cleanWord);
       utterance.lang = 'en-US';
+      utterance.rate = 0.9; // Slightly slower for clarity
+      
+      // Try to explicitly select an English voice to prevent spelling out
+      const voices = window.speechSynthesis.getVoices();
+      const englishVoice = voices.find(v => v.lang.startsWith('en-') && !v.localService) || 
+                           voices.find(v => v.lang.startsWith('en-'));
+      if (englishVoice) {
+        utterance.voice = englishVoice;
+      }
+      
+      // Keep a reference to prevent garbage collection on Android WebView
+      (window as any)._currentUtterance = utterance;
+      
       window.speechSynthesis.speak(utterance);
     }
   };

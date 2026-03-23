@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { WordList } from './components/WordList';
 import { Reward } from './components/Reward';
 import { SponsorModal } from './components/SponsorModal';
+import { SearchBar } from './components/SearchBar';
 import { getDailyCount } from './utils/ebbinghaus';
 import { BookOpen, Bell, ArrowLeftRight, Shuffle, Fish, ShoppingBag } from 'lucide-react';
 import catImg from './assets/cat.jpg';
@@ -19,6 +20,14 @@ export default function App() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
 
   useEffect(() => {
+    // Pre-load voices for Android TTS
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.getVoices();
+      window.speechSynthesis.onvoiceschanged = () => {
+        window.speechSynthesis.getVoices();
+      };
+    }
+
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e);
@@ -134,6 +143,8 @@ export default function App() {
 
       {/* Main Content */}
       <main className="max-w-md mx-auto px-4 py-6">
+        <SearchBar />
+
         {/* Action Buttons */}
         <div className="flex gap-3 mb-6">
           <button 
