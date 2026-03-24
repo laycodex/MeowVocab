@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { WordList } from './components/WordList';
 import { Reward } from './components/Reward';
-import { SponsorModal } from './components/SponsorModal';
 import { SearchBar } from './components/SearchBar';
 import { getDailyCount } from './utils/ebbinghaus';
-import { BookOpen, Bell, ArrowLeftRight, Shuffle, Fish, ShoppingBag } from 'lucide-react';
-import catImg from './assets/cat.jpg';
+import { BookOpen, Bell, ArrowLeftRight, Shuffle, Fish } from 'lucide-react';
 
 export default function App() {
   const [category, setCategory] = useState<'IELTS' | 'GRE' | 'TOEFL' | 'SAT'>('IELTS');
@@ -16,7 +14,6 @@ export default function App() {
   const [showReward, setShowReward] = useState(false);
   const [rewardShownToday, setRewardShownToday] = useState(false);
   const [reminderEnabled, setReminderEnabled] = useState(false);
-  const [showSponsor, setShowSponsor] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
 
   useEffect(() => {
@@ -149,25 +146,10 @@ export default function App() {
         <div className="flex gap-3 mb-6">
           <button 
             onClick={handleInstallClick}
-            className="flex-1 flex items-center justify-center gap-2 bg-white border border-[#E5E0D8] text-[#5C4B41] py-3 rounded-xl font-medium shadow-sm active:scale-95 transition-transform"
+            className="w-full flex items-center justify-center gap-2 bg-white border border-[#E5E0D8] text-[#5C4B41] py-3 rounded-xl font-medium shadow-sm active:scale-95 transition-transform"
           >
             <Fish className="w-5 h-5 text-[#E9C46A] fill-[#FAF8F5]" />
             添加到桌面
-          </button>
-          <button 
-            onClick={() => setShowSponsor(true)}
-            className="flex-1 flex items-center justify-center gap-2 bg-[#F4A261] text-white py-3 rounded-xl font-medium shadow-sm active:scale-95 transition-transform"
-          >
-            <div className="relative flex items-center justify-center">
-              <ShoppingBag className="w-5 h-5" />
-              <img 
-                src={catImg} 
-                alt="cat" 
-                className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full object-cover border border-[#F4A261]" 
-                referrerPolicy="no-referrer"
-              />
-            </div>
-            赞助猫粮
           </button>
         </div>
 
@@ -262,9 +244,6 @@ export default function App() {
 
       {/* Reward Modal */}
       {showReward && <Reward onClose={() => setShowReward(false)} />}
-      
-      {/* Sponsor Modal */}
-      {showSponsor && <SponsorModal onClose={() => setShowSponsor(false)} />}
     </div>
   );
 }
