@@ -3,15 +3,21 @@ import React, { useState } from 'react';
 interface ScratchCardProps {
   children: React.ReactNode;
   onReveal?: () => void;
+  sensitivity?: 1 | 2 | 3;
 }
 
-export const ScratchCard: React.FC<ScratchCardProps> = ({ children, onReveal }) => {
+export const ScratchCard: React.FC<ScratchCardProps> = ({ children, onReveal, sensitivity = 1 }) => {
   const [isRevealed, setIsRevealed] = useState(false);
+  const [interactCount, setInteractCount] = useState(0);
 
-  const handleReveal = () => {
+  const handleInteraction = () => {
     if (!isRevealed) {
-      setIsRevealed(true);
-      if (onReveal) onReveal();
+      const newCount = interactCount + 1;
+      setInteractCount(newCount);
+      if (newCount >= sensitivity) {
+        setIsRevealed(true);
+        if (onReveal) onReveal();
+      }
     }
   };
 
@@ -19,20 +25,22 @@ export const ScratchCard: React.FC<ScratchCardProps> = ({ children, onReveal }) 
 
   return (
     <div 
-      className="relative w-full h-full min-h-[40px] overflow-hidden rounded-lg flex items-center"
+      className="relative w-full h-full min-h-[40px] overflow-hidden rounded-lg flex items-center select-none"
       style={{
         cursor: isRevealed ? 'default' : `url("${cursorSvg}") 20 20, pointer`
       }}
+      onPointerDown={handleInteraction}
+      onPointerMove={(e) => { if (e.buttons === 1) handleInteraction(); }}
     >
       <div className={`w-full transition-opacity duration-300 ${isRevealed ? 'opacity-100' : 'opacity-0'}`}>
         {children}
       </div>
       {!isRevealed && (
         <div
-          className="absolute top-0 left-0 w-full h-full bg-[#E5E0D8] flex items-center justify-center text-[#C8C0B1] text-xs font-medium"
-          onPointerDown={handleReveal}
+          className="absolute top-0 left-0 w-full h-full bg-[#E5E0D8] flex items-center justify-center text-[#C8C0B1] text-xs font-medium transition-opacity duration-300"
+          style={{ opacity: Math.max(0.2, 1 - (interactCount / sensitivity)) }}
         >
-          点击刮开
+          {sensitivity === 1 ? '点击刮开' : sensitivity === 2 ? '中度刮开' : '用力搓！'}
         </div>
       )}
     </div>

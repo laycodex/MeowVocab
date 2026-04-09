@@ -2,18 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { WordList } from './components/WordList';
 import { Reward } from './components/Reward';
 import { SearchBar } from './components/SearchBar';
+import { SettingsModal } from './components/SettingsModal';
 import { getDailyCount } from './utils/ebbinghaus';
-import { BookOpen, Bell, ArrowLeftRight, Shuffle, Fish } from 'lucide-react';
+import { BookOpen, Bell, Shuffle, Fish, Settings } from 'lucide-react';
 
 export default function App() {
   const [category, setCategory] = useState<'IELTS' | 'GRE' | 'TOEFL' | 'SAT'>('IELTS');
   const [order, setOrder] = useState<'sequential' | 'random'>('sequential');
   const [handedness, setHandedness] = useState<'right' | 'left'>('right');
   const [mode, setMode] = useState<'new' | 'review' | 'all' | 'favorites'>('all');
+  const [sensitivity, setSensitivity] = useState<1 | 2 | 3>(1);
+  const [autoPlay, setAutoPlay] = useState(false);
+  
   const [dailyCount, setDailyCount] = useState(0);
   const [showReward, setShowReward] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [rewardShownToday, setRewardShownToday] = useState(false);
-  const [reminderEnabled, setReminderEnabled] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
 
   useEffect(() => {
@@ -41,10 +45,16 @@ export default function App() {
     }
 
     const reminder = localStorage.getItem('reminder_enabled');
-    if (reminder === 'true') {
-      setReminderEnabled(true);
-      setupReminder();
-    }
+    // Removed Notification API setup for reminder, replaced with ICS download
+
+    const savedHand = localStorage.getItem('vocab_handedness');
+    if (savedHand) setHandedness(savedHand as 'right' | 'left');
+    
+    const savedSens = localStorage.getItem('vocab_sensitivity');
+    if (savedSens) setSensitivity(Number(savedSens) as 1 | 2 | 3);
+    
+    const savedAuto = localStorage.getItem('vocab_autoplay');
+    if (savedAuto) setAutoPlay(savedAuto === 'true');
 
     return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
   }, []);
@@ -77,37 +87,45 @@ export default function App() {
     }
   };
 
-  const toggleReminder = async () => {
-    if (!reminderEnabled) {
-      if ('Notification' in window) {
-        const permission = await Notification.requestPermission();
-        if (permission === 'granted') {
-          setReminderEnabled(true);
-          localStorage.setItem('reminder_enabled', 'true');
-          setupReminder();
-        } else {
-          alert('Please enable notifications in your browser settings.');
-        }
-      }
-    } else {
-      setReminderEnabled(false);
-      localStorage.setItem('reminder_enabled', 'false');
-    }
+  const handleSetHandedness = (v: 'right' | 'left') => {
+    setHandedness(v);
+    localStorage.setItem('vocab_handedness', v);
   };
 
-  const setupReminder = () => {
-    // Simple check every minute
-    setInterval(() => {
-      const now = new Date();
-      if (now.getHours() === 20 && now.getMinutes() === 0) {
-        if ('Notification' in window && Notification.permission === 'granted') {
-          new Notification('MeowVocab Time!', {
-            body: 'It\'s 8 PM! Time to review your daily vocabulary.',
-            icon: '/favicon.ico'
-          });
-        }
-      }
-    }, 60000);
+  const handleSetSensitivity = (v: 1 | 2 | 3) => {
+    setSensitivity(v);
+    localStorage.setItem('vocab_sensitivity', v.toString());
+  };
+
+  const handleSetAutoPlay = (v: boolean) => {
+    setAutoPlay(v);
+    localStorage.setItem('vocab_autoplay', v.toString());
+  };
+
+  const downloadICS = () => {
+    const icsContent = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//MeowVocab//CN
+BEGIN:VEVENT
+SUMMARY:MeowVocab 每日背单词
+DESCRIPTION:该背单词啦！快打开 MeowVocab 学习吧~
+RRULE:FREQ=DAILY
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:MeowVocab 每日背单词提醒
+TRIGGER:-PT0M
+END:VALARM
+END:VEVENT
+END:VCALENDAR`.replace(/\n/g, '\r\n');
+    
+    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'meowvocab_reminder.ics');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
@@ -124,11 +142,18 @@ export default function App() {
           
           <div className="flex items-center gap-4">
             <button 
-              onClick={toggleReminder}
-              className={`p-2 rounded-full transition-colors ${reminderEnabled ? 'bg-[#E9C46A] text-white' : 'bg-[#FAF8F5] text-[#A89F91] hover:bg-[#E5E0D8]'}`}
-              title="Daily 8 PM Reminder"
+              onClick={downloadICS}
+              className="p-2 rounded-full transition-colors bg-[#FAF8F5] text-[#A89F91] hover:bg-[#E5E0D8]"
+              title="添加到日历提醒"
             >
               <Bell className="w-5 h-5" />
+            </button>
+            <button 
+              onClick={() => setShowSettings(true)}
+              className="p-2 rounded-full transition-colors bg-[#FAF8F5] text-[#A89F91] hover:bg-[#E5E0D8]"
+              title="设置"
+            >
+              <Settings className="w-5 h-5" />
             </button>
             <div className="text-right">
               <p className="text-xs font-semibold text-[#A89F91] uppercase tracking-wider">Today</p>
@@ -214,18 +239,6 @@ export default function App() {
             </select>
             <Shuffle className="w-4 h-4 text-[#A89F91] absolute left-3 top-1/2 -translate-y-1/2" />
           </div>
-          
-          <div className="flex-1 relative">
-            <select 
-              value={handedness} 
-              onChange={e => setHandedness(e.target.value as any)} 
-              className="w-full appearance-none bg-white border border-[#E5E0D8] rounded-xl pl-10 pr-4 py-2.5 text-sm font-medium text-[#5C4B41] focus:outline-none focus:ring-2 focus:ring-[#F4A261] shadow-sm"
-            >
-              <option value="right">右排版 (Right-handed)</option>
-              <option value="left">左排版 (Left-handed)</option>
-            </select>
-            <ArrowLeftRight className="w-4 h-4 text-[#A89F91] absolute left-3 top-1/2 -translate-y-1/2" />
-          </div>
         </div>
 
         <div className="flex justify-between px-4 mb-2 text-xs font-semibold text-[#A89F91] uppercase tracking-wider">
@@ -238,12 +251,27 @@ export default function App() {
           order={order}
           handedness={handedness}
           mode={mode}
+          sensitivity={sensitivity}
+          autoPlay={autoPlay}
           onDailyGoalUpdate={handleDailyGoalUpdate} 
         />
       </main>
 
       {/* Reward Modal */}
       {showReward && <Reward onClose={() => setShowReward(false)} />}
+      
+      {/* Settings Modal */}
+      {showSettings && (
+        <SettingsModal 
+          onClose={() => setShowSettings(false)}
+          handedness={handedness}
+          setHandedness={handleSetHandedness}
+          sensitivity={sensitivity}
+          setSensitivity={handleSetSensitivity}
+          autoPlay={autoPlay}
+          setAutoPlay={handleSetAutoPlay}
+        />
+      )}
     </div>
   );
 }

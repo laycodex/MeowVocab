@@ -9,35 +9,57 @@ export interface ReviewData {
 }
 
 export const getProgress = (): Record<string, ReviewData> => {
-  const data = localStorage.getItem('vocab_progress');
-  return data ? JSON.parse(data) : {};
+  try {
+    const data = localStorage.getItem('vocab_progress');
+    return data ? JSON.parse(data) : {};
+  } catch (e) {
+    console.error('Failed to parse progress', e);
+    return {};
+  }
 };
 
 export const saveProgress = (progress: Record<string, ReviewData>) => {
-  localStorage.setItem('vocab_progress', JSON.stringify(progress));
+  try {
+    localStorage.setItem('vocab_progress', JSON.stringify(progress));
+  } catch (e) {
+    console.error('Failed to save progress', e);
+  }
 };
 
 export const getDailyCount = (): { date: string; count: number } => {
-  const data = localStorage.getItem('vocab_daily');
-  const today = new Date().toISOString().split('T')[0];
-  if (data) {
-    const parsed = JSON.parse(data);
-    if (parsed.date === today) return parsed;
+  try {
+    const data = localStorage.getItem('vocab_daily');
+    const today = new Date().toISOString().split('T')[0];
+    if (data) {
+      const parsed = JSON.parse(data);
+      if (parsed.date === today) return parsed;
+    }
+    return { date: today, count: 0 };
+  } catch (e) {
+    const today = new Date().toISOString().split('T')[0];
+    return { date: today, count: 0 };
   }
-  return { date: today, count: 0 };
 };
 
 export const incrementDailyCount = () => {
   const current = getDailyCount();
   const today = new Date().toISOString().split('T')[0];
   const newCount = current.date === today ? current.count + 1 : 1;
-  localStorage.setItem('vocab_daily', JSON.stringify({ date: today, count: newCount }));
+  try {
+    localStorage.setItem('vocab_daily', JSON.stringify({ date: today, count: newCount }));
+  } catch (e) {
+    console.error('Failed to save daily count', e);
+  }
   return newCount;
 };
 
 export const getFavorites = (): string[] => {
-  const data = localStorage.getItem('vocab_favorites');
-  return data ? JSON.parse(data) : [];
+  try {
+    const data = localStorage.getItem('vocab_favorites');
+    return data ? JSON.parse(data) : [];
+  } catch (e) {
+    return [];
+  }
 };
 
 export const toggleFavorite = (wordId: string): boolean => {
@@ -49,8 +71,12 @@ export const toggleFavorite = (wordId: string): boolean => {
     favs.add(wordId);
     isFav = true;
   }
-  localStorage.setItem('vocab_favorites', JSON.stringify(Array.from(favs)));
-  window.dispatchEvent(new Event('favorites_changed'));
+  try {
+    localStorage.setItem('vocab_favorites', JSON.stringify(Array.from(favs)));
+    window.dispatchEvent(new Event('favorites_changed'));
+  } catch (e) {
+    console.error('Failed to save favorites', e);
+  }
   return isFav;
 };
 
@@ -71,9 +97,9 @@ export const reviewWord = (wordId: string, quality: number) => {
     data.interval = 1;
   } else {
     if (data.repetitions === 0) {
-      data.interval = 1;
+      data.interval = 0; // Due immediately for the next review session
     } else if (data.repetitions === 1) {
-      data.interval = 6;
+      data.interval = 1;
     } else {
       data.interval = Math.round(data.interval * data.ease);
     }

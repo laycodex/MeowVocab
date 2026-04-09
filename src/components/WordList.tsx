@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Word } from '../data/words';
 import { ScratchCard } from './ScratchCard';
 import { reviewWord, getDueWords, getFavorites, toggleFavorite } from '../utils/ebbinghaus';
+import { playAudio } from '../utils/audio';
 import { Volume2, CheckCircle, ArrowRight, Star } from 'lucide-react';
 
 interface WordListProps {
@@ -9,6 +10,8 @@ interface WordListProps {
   order: 'sequential' | 'random';
   handedness: 'right' | 'left';
   mode: 'new' | 'review' | 'all' | 'favorites';
+  sensitivity: 1 | 2 | 3;
+  autoPlay: boolean;
   onDailyGoalUpdate: (count: number) => void;
 }
 
@@ -31,7 +34,7 @@ const SpadeQ = () => (
   </svg>
 );
 
-export const WordList: React.FC<WordListProps> = ({ category, order, handedness, mode, onDailyGoalUpdate }) => {
+export const WordList: React.FC<WordListProps> = ({ category, order, handedness, mode, sensitivity, autoPlay, onDailyGoalUpdate }) => {
   const [words, setWords] = useState<Word[]>([]);
   const [revealedWords, setRevealedWords] = useState<Set<string>>(new Set());
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
@@ -110,38 +113,18 @@ export const WordList: React.FC<WordListProps> = ({ category, order, handedness,
     }
   }, [words, revealedWords, category, order, mode, currentParams]);
 
-  const playAudio = (word: string) => {
-    if ('speechSynthesis' in window) {
-      // Cancel any ongoing speech to prevent queuing issues on Android
-      window.speechSynthesis.cancel();
-      
-      // Clean up the word to prevent spelling out (e.g., removing special characters)
-      const cleanWord = word.replace(/[^a-zA-Z\s-]/g, '').trim();
-      
-      const utterance = new SpeechSynthesisUtterance(cleanWord);
-      utterance.lang = 'en-US';
-      utterance.rate = 0.9; // Slightly slower for clarity
-      
-      // Try to explicitly select an English voice to prevent spelling out
-      const voices = window.speechSynthesis.getVoices();
-      const englishVoice = voices.find(v => v.lang.startsWith('en-') && !v.localService) || 
-                           voices.find(v => v.lang.startsWith('en-'));
-      if (englishVoice) {
-        utterance.voice = englishVoice;
-      }
-      
-      // Keep a reference to prevent garbage collection on Android WebView
-      (window as any)._currentUtterance = utterance;
-      
-      window.speechSynthesis.speak(utterance);
-    }
-  };
-
   const handleReveal = (wordId: string) => {
     if (!revealedWords.has(wordId)) {
       setRevealedWords(prev => new Set(prev).add(wordId));
       reviewWord(wordId, 4);
       onDailyGoalUpdate(1);
+      
+      if (autoPlay) {
+        const wordObj = words.find(w => w.id === wordId);
+        if (wordObj) {
+          playAudio(wordObj.word);
+        }
+      }
     }
   };
 
@@ -285,7 +268,7 @@ export const WordList: React.FC<WordListProps> = ({ category, order, handedness,
                   <div className="text-sm text-[#A89F91] w-full">{word.meanings.join('; ')}</div>
                 ) : (
                   <div className="w-full h-full flex flex-col justify-center">
-                    <ScratchCard onReveal={() => handleReveal(word.id)}>
+                    <ScratchCard onReveal={() => handleReveal(word.id)} sensitivity={sensitivity}>
                       <div className="text-sm text-[#5C4B41]">{word.meanings.join('; ')}</div>
                     </ScratchCard>
                   </div>

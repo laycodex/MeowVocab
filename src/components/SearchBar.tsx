@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Search as SearchIcon, X, Star, Volume2 } from 'lucide-react';
 import { Word, getWords } from '../data/words';
 import { getFavorites, toggleFavorite } from '../utils/ebbinghaus';
+import { playAudio } from '../utils/audio';
 
 export const SearchBar: React.FC = () => {
   const [query, setQuery] = useState('');
@@ -58,21 +59,9 @@ export const SearchBar: React.FC = () => {
     });
   };
 
-  const playAudio = (word: string, e: React.MouseEvent) => {
+  const handlePlayAudio = (word: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      const cleanWord = word.replace(/[^a-zA-Z\s-]/g, '').trim();
-      const utterance = new SpeechSynthesisUtterance(cleanWord);
-      utterance.lang = 'en-US';
-      utterance.rate = 0.9;
-      const voices = window.speechSynthesis.getVoices();
-      const englishVoice = voices.find(v => v.lang.startsWith('en-') && !v.localService) || 
-                           voices.find(v => v.lang.startsWith('en-'));
-      if (englishVoice) utterance.voice = englishVoice;
-      (window as any)._currentUtterance = utterance;
-      window.speechSynthesis.speak(utterance);
-    }
+    playAudio(word);
   };
 
   return (
@@ -118,7 +107,7 @@ export const SearchBar: React.FC = () => {
                           <Star size={16} fill={isFav ? 'currentColor' : 'none'} />
                         </button>
                         <button 
-                          onClick={(e) => playAudio(word.word, e)}
+                          onClick={(e) => handlePlayAudio(word.word, e)}
                           className="text-[#F4A261] p-1.5 hover:bg-[#E5E0D8] rounded-full transition-colors"
                         >
                           <Volume2 size={16} />
