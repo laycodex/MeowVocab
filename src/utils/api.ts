@@ -1,14 +1,17 @@
 /**
- * DNS 注意事项：
- * 当前 www.meowvocab.site DNS 仍指向 Vercel，需要改到腾讯云服务器 IP 118.25.174.171，否则 API 访问不到。
- * 需要修改 A 记录：
- * @  → 118.25.174.171
- * www → 118.25.174.171
+ * 解决方案：使用 Vercel 反向代理 (Rewrite)
+ * 
+ * 既然 DNS 记录冲突，我们不再修改域名的 DNS。
+ * 我们在项目根目录添加了 vercel.json，让 Vercel 自动将前端发往 /api 的请求
+ * 转发到你的腾讯云服务器 (http://118.25.174.171/api)。
+ * 
+ * 这样做的巨大好处：
+ * 1. 完美绕开 DNS 冲突，你的域名依然指向 Vercel。
+ * 2. 完美解决 HTTPS 证书问题（Vercel 提供 HTTPS，然后它在后台用 HTTP 访问你的服务器，浏览器不会报 Mixed Content 错误）。
+ * 3. 完美解决跨域 (CORS) 问题。
  */
 
-export const API_BASE_URL = 'https://www.meowvocab.site/api';
-// 若 HTTPS 证书问题，请临时切换为：
-// export const API_BASE_URL = 'http://www.meowvocab.site/api';
+export const API_BASE_URL = '/api';
 
 export const getToken = () => localStorage.getItem('vocab_token');
 export const setToken = (token: string) => localStorage.setItem('vocab_token', token);
