@@ -3,8 +3,11 @@ import { WordList } from './components/WordList';
 import { Reward } from './components/Reward';
 import { SearchBar } from './components/SearchBar';
 import { SettingsModal } from './components/SettingsModal';
+import { CustomSelect } from './components/CustomSelect';
+import { AuthModal } from './components/AuthModal';
 import { getDailyCount } from './utils/ebbinghaus';
-import { BookOpen, Bell, Shuffle, Fish, Settings } from 'lucide-react';
+import { getToken, getUsername } from './utils/api';
+import { BookOpen, Bell, Shuffle, Fish, Settings, User } from 'lucide-react';
 
 export default function App() {
   const [category, setCategory] = useState<'IELTS' | 'GRE' | 'TOEFL' | 'SAT'>('IELTS');
@@ -17,10 +20,17 @@ export default function App() {
   const [dailyCount, setDailyCount] = useState(0);
   const [showReward, setShowReward] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [currentUser, setCurrentUser] = useState<string | null>(null);
   const [rewardShownToday, setRewardShownToday] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
 
   useEffect(() => {
+    const token = getToken();
+    const user = getUsername();
+    if (token && user) {
+      setCurrentUser(user);
+    }
     // Pre-load voices for Android TTS
     if ('speechSynthesis' in window) {
       window.speechSynthesis.getVoices();
@@ -171,10 +181,18 @@ END:VCALENDAR`.replace(/\n/g, '\r\n');
         <div className="flex gap-3 mb-6">
           <button 
             onClick={handleInstallClick}
-            className="w-full flex items-center justify-center gap-2 bg-white border border-[#E5E0D8] text-[#5C4B41] py-3 rounded-xl font-medium shadow-sm active:scale-95 transition-transform"
+            className="flex-1 flex items-center justify-center gap-2 bg-white border border-[#E5E0D8] text-[#5C4B41] py-3 rounded-xl font-medium shadow-sm active:scale-95 transition-transform"
           >
             <Fish className="w-5 h-5 text-[#E9C46A] fill-[#FAF8F5]" />
             添加到桌面
+          </button>
+          
+          <button 
+            onClick={() => setShowAuthModal(true)}
+            className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-medium shadow-sm active:scale-95 transition-transform ${currentUser ? 'bg-[#FAF8F5] text-[#F4A261] border border-[#F4A261]/30' : 'bg-[#F4A261] text-white'}`}
+          >
+            <User className={`w-5 h-5 ${currentUser ? 'text-[#F4A261]' : 'text-white'}`} />
+            {currentUser || '登录 / 注册'}
           </button>
         </div>
 
@@ -227,18 +245,16 @@ END:VCALENDAR`.replace(/\n/g, '\r\n');
           </button>
         </div>
 
-        <div className="flex gap-2 mb-6">
-          <div className="flex-1 relative">
-            <select 
-              value={order} 
-              onChange={e => setOrder(e.target.value as any)} 
-              className="w-full appearance-none bg-white border border-[#E5E0D8] rounded-xl pl-10 pr-4 py-2.5 text-sm font-medium text-[#5C4B41] focus:outline-none focus:ring-2 focus:ring-[#F4A261] shadow-sm"
-            >
-              <option value="sequential">顺序版 (Sequential)</option>
-              <option value="random">乱序版 (Random)</option>
-            </select>
-            <Shuffle className="w-4 h-4 text-[#A89F91] absolute left-3 top-1/2 -translate-y-1/2" />
-          </div>
+        <div className="mb-6">
+          <CustomSelect 
+            value={order} 
+            onChange={v => setOrder(v as any)} 
+            icon={<Shuffle className="w-4 h-4" />}
+            options={[
+              { label: '顺序版 (Sequential)', value: 'sequential' },
+              { label: '乱序版 (Random)', value: 'random' }
+            ]}
+          />
         </div>
 
         <div className="flex justify-between px-4 mb-2 text-xs font-semibold text-[#A89F91] uppercase tracking-wider">
@@ -270,6 +286,15 @@ END:VCALENDAR`.replace(/\n/g, '\r\n');
           setSensitivity={handleSetSensitivity}
           autoPlay={autoPlay}
           setAutoPlay={handleSetAutoPlay}
+        />
+      )}
+
+      {/* Auth & Sync Modal */}
+      {showAuthModal && (
+        <AuthModal 
+          onClose={() => setShowAuthModal(false)}
+          currentUser={currentUser}
+          onAuthChange={setCurrentUser}
         />
       )}
     </div>

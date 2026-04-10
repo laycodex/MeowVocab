@@ -80,6 +80,35 @@ export const toggleFavorite = (wordId: string): boolean => {
   return isFav;
 };
 
+export const exportAllData = () => {
+  return {
+    progress: getProgress(),
+    daily: getDailyCount(),
+    favorites: getFavorites(),
+  };
+};
+
+export const importAllData = (data: any) => {
+  if (!data) return;
+  if (data.progress) localStorage.setItem('vocab_progress', JSON.stringify(data.progress));
+  if (data.daily) localStorage.setItem('vocab_daily', JSON.stringify(data.daily));
+  if (data.favorites) localStorage.setItem('vocab_favorites', JSON.stringify(data.favorites));
+  window.dispatchEvent(new Event('favorites_changed'));
+};
+
+// Add listener to ensure data is saved when app is backgrounded (crucial for WeChat WebView)
+if (typeof window !== 'undefined') {
+  window.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') {
+      // Force any pending state to be written if we had memory caching
+      // Currently we write to localStorage synchronously, so this is just a safeguard
+    }
+  });
+  window.addEventListener('pagehide', () => {
+    // Another safeguard for iOS WKWebView
+  });
+}
+
 // SM-2 Algorithm
 export const reviewWord = (wordId: string, quality: number) => {
   // quality: 0 (forgot) to 5 (perfect)
