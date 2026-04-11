@@ -17,6 +17,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, currentUser, onAu
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
+  const extractToken = (res: any) => {
+    return res?.data?.token || res?.token || res?.access_token || res?.data?.data?.token;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -26,7 +30,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, currentUser, onAu
     try {
       if (isLogin) {
         const res = await api.login(usernameInput, passwordInput);
-        const token = res.data?.token || res.token;
+        const token = extractToken(res);
         if (token) {
           setToken(token);
           setUsername(usernameInput);
@@ -37,7 +41,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, currentUser, onAu
       } else {
         await api.register(usernameInput, passwordInput);
         const res = await api.login(usernameInput, passwordInput);
-        const token = res.data?.token || res.token;
+        const token = extractToken(res);
         if (token) {
           setToken(token);
           setUsername(usernameInput);
