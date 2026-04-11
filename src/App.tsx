@@ -113,6 +113,13 @@ export default function App() {
   };
 
   const downloadICS = () => {
+    // 检测是否在微信内置浏览器中
+    const isWeChat = /MicroMessenger/i.test(navigator.userAgent);
+    if (isWeChat) {
+      alert('微信环境下无法直接唤起手机日历 😿\n\n💡 解决办法：\n请点击右上角「...」选择「在浏览器打开」后再点击此按钮，或者手动在手机里定一个每日闹钟哦！');
+      return;
+    }
+
     const icsContent = `BEGIN:VCALENDAR
 VERSION:2.0
 PRODID:-//MeowVocab//CN
