@@ -26,8 +26,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, currentUser, onAu
     try {
       if (isLogin) {
         const res = await api.login(usernameInput, passwordInput);
-        if (res.token) {
-          setToken(res.token);
+        const token = res.data?.token || res.token;
+        if (token) {
+          setToken(token);
           setUsername(usernameInput);
           onAuthChange(usernameInput);
         } else {
@@ -36,10 +37,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, currentUser, onAu
       } else {
         await api.register(usernameInput, passwordInput);
         const res = await api.login(usernameInput, passwordInput);
-        if (res.token) {
-          setToken(res.token);
+        const token = res.data?.token || res.token;
+        if (token) {
+          setToken(token);
           setUsername(usernameInput);
           onAuthChange(usernameInput);
+        } else {
+          throw new Error('未获取到 Token');
         }
       }
     } catch (err: any) {

@@ -6,9 +6,9 @@
 
 export const API_BASE_URL = 'https://api.meowvocab.site';
 
-export const getToken = () => localStorage.getItem('vocab_token');
-export const setToken = (token: string) => localStorage.setItem('vocab_token', token);
-export const removeToken = () => localStorage.removeItem('vocab_token');
+export const getToken = () => localStorage.getItem('token');
+export const setToken = (token: string) => localStorage.setItem('token', token);
+export const removeToken = () => localStorage.removeItem('token');
 
 export const getUsername = () => localStorage.getItem('vocab_username');
 export const setUsername = (username: string) => localStorage.setItem('vocab_username', username);
