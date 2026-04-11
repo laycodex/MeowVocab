@@ -16,6 +16,17 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, currentUser, onAu
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
+
+  React.useEffect(() => {
+    const savedUser = localStorage.getItem('vocab_saved_username');
+    const savedPass = localStorage.getItem('vocab_saved_password');
+    if (savedUser && savedPass) {
+      setUsernameInput(savedUser);
+      setPasswordInput(savedPass);
+      setRememberMe(true);
+    }
+  }, []);
 
   const extractToken = (res: any) => {
     return res?.data?.token || res?.token || res?.access_token || res?.data?.data?.token;
@@ -34,6 +45,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, currentUser, onAu
         if (token) {
           setToken(token);
           setUsername(usernameInput);
+          if (rememberMe) {
+            localStorage.setItem('vocab_saved_username', usernameInput);
+            localStorage.setItem('vocab_saved_password', passwordInput);
+          } else {
+            localStorage.removeItem('vocab_saved_username');
+            localStorage.removeItem('vocab_saved_password');
+          }
           onAuthChange(usernameInput);
         } else {
           throw new Error('未获取到 Token');
@@ -45,6 +63,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, currentUser, onAu
         if (token) {
           setToken(token);
           setUsername(usernameInput);
+          if (rememberMe) {
+            localStorage.setItem('vocab_saved_username', usernameInput);
+            localStorage.setItem('vocab_saved_password', passwordInput);
+          } else {
+            localStorage.removeItem('vocab_saved_username');
+            localStorage.removeItem('vocab_saved_password');
+          }
           onAuthChange(usernameInput);
         } else {
           throw new Error('未获取到 Token');
@@ -188,6 +213,18 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, currentUser, onAu
                     placeholder="请输入密码"
                   />
                 </div>
+              </div>
+
+              <div className="flex items-center mt-2">
+                <label className="flex items-center text-sm text-[#A89F91] cursor-pointer hover:text-[#5C4B41] transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    className="mr-2 w-4 h-4 rounded border-[#E5E0D8] text-[#F4A261] focus:ring-[#F4A261]"
+                  />
+                  记住账号密码
+                </label>
               </div>
 
               <button 
