@@ -115,7 +115,17 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, currentUser, onAu
     setSuccessMsg('');
     try {
       const res = await api.syncDown();
-      const dataToImport = res.data || res;
+      
+      // Extract data based on the new backend structure
+      let dataToImport = null;
+      if (res.data && Array.isArray(res.data) && res.data.length > 0) {
+        // The backend returns an array of records, we take the data from the first one
+        dataToImport = res.data[0].data;
+      } else {
+        // Fallback for other structures
+        dataToImport = res.data || res;
+      }
+
       if (dataToImport && (dataToImport.progress || dataToImport.daily || dataToImport.favorites || typeof dataToImport === 'string')) {
         importAllData(dataToImport);
         setSuccessMsg('进度下载成功！页面即将刷新...');

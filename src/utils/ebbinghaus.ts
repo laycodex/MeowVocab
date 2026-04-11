@@ -102,6 +102,12 @@ export const importAllData = (rawData: any) => {
     }
   }
   
+  // Handle case where backend returns an array of records (like the recent backend update)
+  if (Array.isArray(data) && data.length > 0) {
+    // Take the most recent record or the first one
+    data = data[0].data || data[0];
+  }
+  
   // Handle case where backend wraps data in another 'data' property
   if (data.data && !data.progress && !data.daily && !data.favorites) {
     data = data.data;
