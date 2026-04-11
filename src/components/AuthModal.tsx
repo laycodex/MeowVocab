@@ -90,8 +90,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, currentUser, onAu
     setSuccessMsg('');
     try {
       const res = await api.syncDown();
-      if (res.data) {
-        importAllData(res.data);
+      const dataToImport = res.data || res;
+      if (dataToImport && (dataToImport.progress || dataToImport.daily || dataToImport.favorites || typeof dataToImport === 'string')) {
+        importAllData(dataToImport);
         setSuccessMsg('进度下载成功！页面即将刷新...');
         setTimeout(() => window.location.reload(), 1500);
       } else {

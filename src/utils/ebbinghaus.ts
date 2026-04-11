@@ -88,11 +88,33 @@ export const exportAllData = () => {
   };
 };
 
-export const importAllData = (data: any) => {
-  if (!data) return;
-  if (data.progress) localStorage.setItem('vocab_progress', JSON.stringify(data.progress));
-  if (data.daily) localStorage.setItem('vocab_daily', JSON.stringify(data.daily));
-  if (data.favorites) localStorage.setItem('vocab_favorites', JSON.stringify(data.favorites));
+export const importAllData = (rawData: any) => {
+  if (!rawData) return;
+  
+  let data = rawData;
+  // Handle case where backend returns stringified JSON
+  if (typeof data === 'string') {
+    try {
+      data = JSON.parse(data);
+    } catch (e) {
+      console.error('Failed to parse imported data', e);
+      return;
+    }
+  }
+  
+  // Handle case where backend wraps data in another 'data' property
+  if (data.data && !data.progress && !data.daily && !data.favorites) {
+    data = data.data;
+    if (typeof data === 'string') {
+      try {
+        data = JSON.parse(data);
+      } catch (e) {}
+    }
+  }
+
+  if (data.progress) localStorage.setItem('vocab_progress', typeof data.progress === 'string' ? data.progress : JSON.stringify(data.progress));
+  if (data.daily) localStorage.setItem('vocab_daily', typeof data.daily === 'string' ? data.daily : JSON.stringify(data.daily));
+  if (data.favorites) localStorage.setItem('vocab_favorites', typeof data.favorites === 'string' ? data.favorites : JSON.stringify(data.favorites));
   window.dispatchEvent(new Event('favorites_changed'));
 };
 
