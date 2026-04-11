@@ -49,10 +49,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, currentUser, onAu
     }
   };
 
-  const handleLogout = () => {
-    removeToken();
-    removeUsername();
-    onAuthChange(null);
+  const handleLogout = async () => {
+    try {
+      await api.logout();
+    } catch (err) {
+      console.error('Logout error:', err);
+    } finally {
+      removeToken();
+      removeUsername();
+      onAuthChange(null);
+    }
   };
 
   const handleSyncUp = async () => {
