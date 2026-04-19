@@ -1,6 +1,3 @@
-import wordsPart1 from './words_part1.json';
-import wordsPart2 from './words_part2.json';
-
 export interface Word {
   id: string;
   word: string;
@@ -9,16 +6,60 @@ export interface Word {
   category: string;
 }
 
-let cachedWords: Word[] | null = null;
+// Memory cache to prevent reloading the same dictionaries
+const cache: Record<string, Word[]> = {};
 
 export const getWords = async (): Promise<Word[]> => {
-  if (cachedWords) return cachedWords;
+  throw new Error("getWords() should now rely on getWordsByCategory() or getAllWords()");
+};
+
+export const getAllWords = async (): Promise<Word[]> => {
+  const categories = ['CET4', 'CET6', 'KAOYAN', 'TOEFL', 'SAT', 'IELTS'];
+  let allWords: Word[] = [];
+  for (const cat of categories) {
+    const words = await getWordsByCategory(cat);
+    allWords = allWords.concat(words);
+  }
+  return allWords;
+};
+
+export const getWordsByCategory = async (category: string): Promise<Word[]> => {
+  if (cache[category]) return cache[category];
+
+  let rawData: any;
   try {
-    cachedWords = [...(wordsPart1 as Word[]), ...(wordsPart2 as Word[])];
-    return cachedWords;
+    switch (category) {
+      case 'CET4':
+        rawData = (await import('./words_cet4.json')).default;
+        break;
+      case 'CET6':
+        rawData = (await import('./words_cet6.json')).default;
+        break;
+      case 'KAOYAN':
+        rawData = (await import('./words_kaoyan.json')).default;
+        break;
+      case 'TOEFL':
+        rawData = (await import('./words_toefl.json')).default;
+        break;
+      case 'SAT':
+        rawData = (await import('./words_sat.json')).default;
+        break;
+      case 'IELTS':
+      case 'GRE':
+      default:
+        // Fallback for IELTS, GRE which remain in parts 1 & 2 for now
+        const p1 = (await import('./words_part1.json')).default;
+        const p2 = (await import('./words_part2.json')).default;
+        rawData = [...p1, ...p2];
+        break;
+    }
+    
+    // Store in cache
+    cache[category] = rawData as Word[];
+    return cache[category];
   } catch (error) {
-    console.error('Failed to load words:', error);
-    throw error;
+    console.error(`Failed to load words for category ${category}:`, error);
+    return [];
   }
 };
 

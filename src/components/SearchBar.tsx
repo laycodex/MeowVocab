@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Search as SearchIcon, X, Star, Volume2 } from 'lucide-react';
-import { Word, getWords } from '../data/words';
+import { Word, getAllWords } from '../data/words';
 import { getFavorites, toggleFavorite } from '../utils/ebbinghaus';
 import { playAudio } from '../utils/audio';
 
@@ -10,10 +10,10 @@ export const SearchBar: React.FC = () => {
   const [isFocused, setIsFocused] = useState(false);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [allWords, setAllWords] = useState<Word[]>([]);
+  const [isLoadingWords, setIsLoadingWords] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    getWords().then(setAllWords);
     setFavorites(new Set(getFavorites()));
 
     const handleFavoritesChanged = () => {
@@ -32,6 +32,15 @@ export const SearchBar: React.FC = () => {
       window.removeEventListener('favorites_changed', handleFavoritesChanged);
     };
   }, []);
+
+  const handleFocus = async () => {
+    setIsFocused(true);
+    if (allWords.length === 0 && !isLoadingWords) {
+      setIsLoadingWords(true);
+      const words = await getAllWords();
+      setAllWords(words);
+    }
+  };
 
   useEffect(() => {
     if (!query.trim()) {
@@ -71,7 +80,7 @@ export const SearchBar: React.FC = () => {
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          onFocus={() => setIsFocused(true)}
+          onFocus={handleFocus}
           placeholder="搜索单词或中文意思..."
           className="w-full bg-white border border-[#E5E0D8] rounded-xl pl-10 pr-10 py-3 text-sm font-medium text-[#5C4B41] focus:outline-none focus:ring-2 focus:ring-[#F4A261] shadow-sm transition-shadow"
         />

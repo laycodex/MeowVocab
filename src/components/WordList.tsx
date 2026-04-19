@@ -75,43 +75,13 @@ export const WordList: React.FC<WordListProps> = ({ category, order, handedness,
     setWords([]);
     setIsLoading(true);
 
-    if (mode !== 'favorites') {
-      const savedState = localStorage.getItem(`vocab_state_${category}_${order}_${mode}`);
-      if (savedState) {
-        try {
-          const { savedWords, savedRevealed } = JSON.parse(savedState);
-          if (savedWords && savedWords.length > 0) {
-            setWords(savedWords);
-            setRevealedWords(new Set(savedRevealed));
-            setCurrentParams({ category, order, mode });
-            setIsLoading(false);
-            return;
-          }
-        } catch (e) {
-          console.error('Failed to parse saved state', e);
-        }
-      }
-    }
-    
+    // Completely removed localStorage caching to prevent stale phonetics
     loadWords(true, category, order, mode);
     
     return () => {
       window.removeEventListener('favorites_changed', handleFavoritesChanged);
     };
   }, [category, order, mode]);
-
-  useEffect(() => {
-    if (words.length > 0 && 
-        currentParams.category === category && 
-        currentParams.order === order && 
-        currentParams.mode === mode &&
-        mode !== 'favorites') {
-      localStorage.setItem(`vocab_state_${category}_${order}_${mode}`, JSON.stringify({
-        savedWords: words,
-        savedRevealed: Array.from(revealedWords)
-      }));
-    }
-  }, [words, revealedWords, category, order, mode, currentParams]);
 
   const handleReveal = (wordId: string) => {
     if (!revealedWords.has(wordId)) {

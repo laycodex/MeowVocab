@@ -1,4 +1,4 @@
-import { Word, getWords } from '../data/words';
+import { Word, getWordsByCategory } from '../data/words';
 
 export interface ReviewData {
   wordId: string;
@@ -176,13 +176,15 @@ export const reviewWord = (wordId: string, quality: number) => {
 export const getDueWords = async (category: string, limit: number = 20, order: 'sequential' | 'random' = 'sequential', excludeIds: string[] = [], mode: 'new' | 'review' | 'all' | 'favorites' = 'all'): Promise<Word[]> => {
   const progress = getProgress();
   const now = Date.now();
-  const words = await getWords();
+  const categoryWords = await getWordsByCategory(category);
   const favorites = getFavorites();
   
-  const categoryWords = words.filter(w => w.category.includes(category));
+  // Actually getWordsByCategory already filters by category roughly, but to be sure we can filter
+  // It handles fallback parsing where part1 and part2 contain multple categories
+  const filteredCategoryWords = categoryWords.filter(w => w.category.includes(category) || category === w.category);
   
   // Filter words that are due or new, and not in excludeIds
-  let dueWords = categoryWords.filter(w => {
+  let dueWords = filteredCategoryWords.filter(w => {
     if (excludeIds.includes(w.id)) return false;
     
     if (mode === 'favorites') {
@@ -206,8 +208,8 @@ export const getDueWords = async (category: string, limit: number = 20, order: '
   } else {
     // Sequential: sort by original index in the words array
     dueWords = dueWords.sort((a, b) => {
-      const indexA = words.findIndex(w => w.id === a.id);
-      const indexB = words.findIndex(w => w.id === b.id);
+      const indexA = filteredCategoryWords.findIndex(w => w.id === a.id);
+      const indexB = filteredCategoryWords.findIndex(w => w.id === b.id);
       return indexA - indexB;
     });
   }

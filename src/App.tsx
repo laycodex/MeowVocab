@@ -10,7 +10,7 @@ import { getToken, getUsername } from './utils/api';
 import { BookOpen, Bell, Shuffle, Fish, Settings, User } from 'lucide-react';
 
 export default function App() {
-  const [category, setCategory] = useState<'IELTS' | 'GRE' | 'TOEFL' | 'SAT'>('IELTS');
+  const [category, setCategory] = useState<'IELTS' | 'GRE' | 'TOEFL' | 'SAT' | 'CET4' | 'CET6' | 'KAOYAN'>('IELTS');
   const [order, setOrder] = useState<'sequential' | 'random'>('sequential');
   const [handedness, setHandedness] = useState<'right' | 'left'>('right');
   const [mode, setMode] = useState<'new' | 'review' | 'all' | 'favorites'>('all');
@@ -203,18 +203,21 @@ END:VCALENDAR`.replace(/\n/g, '\r\n');
           </button>
         </div>
 
-        <div className="flex bg-white p-1 rounded-xl border border-[#E5E0D8] mb-4 shadow-sm overflow-x-auto hide-scrollbar">
-          {['IELTS', 'GRE', 'TOEFL', 'SAT'].map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setCategory(cat as any)}
-              className={`flex-1 min-w-[70px] py-2 rounded-lg font-medium text-sm transition-colors ${
-                category === cat ? 'bg-[#5C4B41] text-white' : 'text-[#A89F91] hover:bg-[#FAF8F5]'
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
+        <div className="mb-4">
+          <CustomSelect 
+            value={category} 
+            onChange={v => setCategory(v as any)} 
+            icon={<BookOpen className="w-4 h-4 text-[#A89F91]" />}
+            options={[
+              { label: '雅思 (IELTS)', value: 'IELTS' },
+              { label: '托福 (TOEFL)', value: 'TOEFL' },
+              { label: 'GRE', value: 'GRE' },
+              { label: 'SAT', value: 'SAT' },
+              { label: '大学英语四级 (CET4)', value: 'CET4' },
+              { label: '大学英语六级 (CET6)', value: 'CET6' },
+              { label: '考研英语 (KaoYan)', value: 'KAOYAN' }
+            ]}
+          />
         </div>
 
         <div className="flex bg-white p-1 rounded-xl border border-[#E5E0D8] mb-4 shadow-sm overflow-x-auto hide-scrollbar">
