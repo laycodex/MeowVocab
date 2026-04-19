@@ -36,10 +36,14 @@ export const getWordsByCategory = async (category: string): Promise<Word[]> => {
         rawData = (await import('./words_cet6.json')).default;
         break;
       case 'KAOYAN':
-        rawData = (await import('./words_kaoyan.json')).default;
+        const kya = (await import('./words_kaoyan_1.json')).default;
+        const kyb = (await import('./words_kaoyan_2.json')).default;
+        rawData = [...kya, ...kyb];
         break;
       case 'TOEFL':
-        rawData = (await import('./words_toefl.json')).default;
+        const tfla = (await import('./words_toefl_1.json')).default;
+        const tflb = (await import('./words_toefl_2.json')).default;
+        rawData = [...tfla, ...tflb];
         break;
       case 'SAT':
         rawData = (await import('./words_sat.json')).default;
