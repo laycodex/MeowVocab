@@ -11,6 +11,9 @@ export default defineConfig(({mode}) => {
     build: {
       assetsInlineLimit: 0,
     },
+    json: {
+      stringify: true,
+    },
     plugins: [
       react(), 
       tailwindcss(),
